@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp-style Betting App</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #e5ddd5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+        }
+        h1, h2 {
+            color: #075e54;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #25d366;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #128c7e;
+        }
+        #votesList {
+            list-style-type: none;
+            padding: 0;
+        }
+        #votesList li {
+            background-color: #dcf8c6;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        #output {
+            background-color: #ece5dd;
+            padding: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WhatsApp-style Betting App</h1>
+
+        <h2>Create a Bet</h2>
+        <input type="text" id="betStatement" placeholder="Enter bet statement">
+        <input type="number" id="betAmount" placeholder="Amount">
+        <button onclick="createBet()">Create Bet</button>
+
+        <div id="bets"></div>
+
+        <h2>Output</h2>
+        <pre id="output"></pre>
+    </div>
+
+    <script>
+        let bet = null;
+        let votes = [];
+
+        function createBet() {
+            const statement = document.getElementById('betStatement').value;
+            const amount = parseFloat(document.getElementById('betAmount').value);
+            bet = { statement, amount };
+            displayBet();
+        }
+
+        function displayBet() {
+            const betsDiv = document.getElementById('bets');
+            betsDiv.innerHTML = `
+                <h3>${bet.statement}</h3>
+                <p>Amount: ${bet.amount}</p>
+                <input type="text" id="initials" placeholder="Your Initials" maxlength="2">
+                <button onclick="vote(true)">True</button>
+                <button onclick="vote(false)">False</button>
+                <h4>Votes:</h4>
+                <ul id="votesList"></ul>
+                <button onclick="resolveBet(true)">True</button>
+                <button onclick="resolveBet(false)">False</button>
+            `;
+        }
+
+        function vote(isTrue) {
+            const initials = document.getElementById('initials').value.toUpperCase();
+            if (initials.length !== 2) {
+                alert("Please enter your initials (2 characters)");
+                return;
+            }
+            votes.push({ initials, vote: isTrue });
+            updateVoteDisplay();
+        }
+
+        function updateVoteDisplay() {
+            const votesList = document.getElementById('votesList');
+            votesList.innerHTML = votes.map(v => `<li>${v.initials}: ${v.vote ? 'True' : 'False'}</li>`).join('');
+        }
+
+        function resolveBet(result) {
+            const winners = votes.filter(v => v.vote === result);
+            const losers = votes.filter(v => v.vote !== result);
+            const totalLosersAmount = bet.amount * losers.length;
+            const winAmount = totalLosersAmount / winners.length;
+
+            let results = [];
+
+            winners.forEach(w => {
+                results.push(`${w.initials}: Wins ${winAmount.toFixed(2)}`);
+            });
+
+            losers.forEach(l => {
+                results.push(`${l.initials}: Loses ${bet.amount.toFixed(2)}`);
+            });
+
+            results.push("\nPayouts:");
+            losers.forEach(l => {
+                winners.forEach(w => {
+                    const payout = bet.amount / winners.length;
+                    results.push(`${l.initials} pays ${w.initials} ${payout.toFixed(2)}`);
+                });
+            });
+
+            document.getElementById('output').innerHTML = results.join('<br>');
+        }
+    </script>
+</body>
+</html>
