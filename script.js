@@ -59,3 +59,4 @@ function displayAllBets() {
     console.log(JSON.stringify(bets, null, 2));
     showOutput("Current bets: " + JSON.stringify(bets, null, 2));
 }
+
